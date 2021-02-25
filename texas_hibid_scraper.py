@@ -1,7 +1,11 @@
-# vehicles, high ticket items, trucks, cars, golf carts, rv, OHV, motorcycles etc
-# 2010 or newer
-# 78414 250-500 miles
-import re, os, sys, pprint, json, urllib.request
+# TODO add filter for year of vehicle
+# TODO add CSV output file for Excel viewing
+import json
+import os
+import pprint
+import re
+import sys
+import urllib.request
 from bs4 import BeautifulSoup as bs
 
 miles = "500"
@@ -32,6 +36,7 @@ if confirmation.lower() == "y":
         url = 'https://texas.hibid.com/lots/{}/?status=open&zip={}&miles={}&apage={}&ipp=100'.format(searchTerms[termIterator],
                                                                                                      zipCode, miles, pageIterator)
         opener = urllib.request.build_opener()
+        # Add headers so that user-agent is not null and connection is not rejected
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
         response = urllib.request.urlopen(url)
@@ -43,16 +48,16 @@ if confirmation.lower() == "y":
         result = []
         for lot in lots:
             result.extend(lot)
-
         result = result[0][20:-4]
         result = re.sub("[}],\s*[{]", "},\n{\n", result)
         toJSON = json.loads(result)
         listing = {}
         if not toJSON:
             print("-----{}".format(searchTerms[termIterator]).upper(), "category exhausted-----\n")
-            termIterator += 1
-            pageIterator = 1
+            termIterator += 1  # Go to next term
+            pageIterator = 1  # Reset page count to 1
             if termIterator == len(searchTerms):
+                print("Search complete, csv file created in local directory")  # TODO
                 break
             continue
         for item in toJSON:
